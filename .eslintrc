@@ -12,3 +12,4 @@ rules:
     - 2
     - {"builtinGlobals": false, "hoist": "functions"}
   camelcase: 2
+  no-console: 2

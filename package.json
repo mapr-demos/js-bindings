@@ -5,7 +5,8 @@
   "description": "maprdb javascript client",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha -t 0",
+    "docs": "jsdoc -r lib/* -d ./docs"
   },
   "repository": {
     "type": "git",
@@ -16,6 +17,7 @@
   "devDependencies": {
     "chai": "^3.2.0",
     "java": "^0.5.5",
+    "jsdoc": "^3.3.2",
     "mocha": "^2.3.0"
   }
 }

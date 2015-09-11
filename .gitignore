@@ -1,3 +1,7 @@
+.idea
 node_modules
 .tern-port
 target
+npm-debug.log
+out/
+docs/
