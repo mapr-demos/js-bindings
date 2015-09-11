@@ -24,12 +24,38 @@ describe('Table', function () {
       t.insert({
         _id: '0123',
         name: 'John',
-        lastName: 'Doe'
+        lastName: 'Doe',
+        nums: [1,2,3],
+        interests: [
+          {
+            title: 'Coding',
+            orderNum: 1,
+            orderString: 'string',
+            someProp: {
+              someString: 'string',
+              someNum: 1,
+              someArray: [1,2,3, 'string']
+            }
+          }
+        ]
       }, function() {
         t.findById('0123', function(document, err) {
           assert.equal(document._id, '0123', 'inserted document `_id` field validation');
           assert.equal(document.name, 'John', 'inserted document `name` field validation');
           assert.equal(document.lastName, 'Doe', 'inserted document `lastName` validation');
+          assert.sameMembers(document.nums, [1,2,3], 'inserted document `nums` validation');
+          assert.sameDeepMembers(document.interests, [
+            {
+              title: 'Coding',
+              orderNum: 1,
+              orderString: 'string',
+              someProp: {
+                someString: 'string',
+                someNum: 1,
+                someArray: [1,2,3, 'string']
+              }
+            }
+          ], 'inserted document `interests` validation');
           done();
         });
       });

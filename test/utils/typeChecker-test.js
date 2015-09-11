@@ -26,4 +26,18 @@ describe('typeChecker', function () {
       });
   });
 
+  describe('getJavaType', function() {
+    [
+      {value: java.newInstanceSync('java.util.HashMap'), type: 'java.util.HashMap'},
+      {value: java.newInstanceSync('java.util.ArrayList'), type: 'java.util.ArrayList'},
+      {value: java.newInstanceSync('java.util.Date'), type: 'java.util.Date'},
+      {value: java.newInstanceSync('java.sql.Timestamp', java.newLong(1234)), type: 'java.sql.Timestamp'},
+      {value: java.newLong(1234), type: 'java.lang.Long'}
+    ].forEach(function(test) {
+        it('class is ' + test.type, function () {
+          assert.equal(typeChecker.getJavaType(test.value), test.type);
+        });
+      });
+  });
+
 });
