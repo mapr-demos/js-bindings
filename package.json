@@ -5,7 +5,7 @@
   "description": "maprdb javascript client",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -t 0",
+    "test": "mocha -t 0 --recursive",
     "postinstall": "mvn dependency:copy-dependencies",
     "docs": "jsdoc -r lib/* -d ./docs"
   },
