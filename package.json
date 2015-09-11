@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha -t 0",
+    "postinstall": "mvn dependency:copy-dependencies",
     "docs": "jsdoc -r lib/* -d ./docs"
   },
   "repository": {

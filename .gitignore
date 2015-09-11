@@ -1,7 +1,7 @@
 .idea
-node_modules
-.tern-port
-target
+node_modules/
+target/
+maprdb_java/
 npm-debug.log
 out/
 docs/
