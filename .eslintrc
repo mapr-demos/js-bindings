@@ -1,0 +1,14 @@
+env:
+  node: 1
+  mocha: 1
+
+rules:
+  strict: 0
+  eqeqeq: 1
+  quotes: [2, "single"]
+  no-underscore-dangle: 0
+  dot-notation: 0
+  no-shadow:
+    - 2
+    - {"builtinGlobals": false, "hoist": "functions"}
+  camelcase: 2

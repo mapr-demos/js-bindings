@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "name": "maprdb-js",
+  "version": "0.0.0",
+  "description": "maprdb javascript client",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "none"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.2.0",
+    "java": "^0.5.5",
+    "mocha": "^2.3.0"
+  }
+}
