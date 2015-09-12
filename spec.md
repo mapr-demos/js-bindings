@@ -95,10 +95,12 @@ A condition is  used to send server-side query filters to the find operation. Co
 specified by using a simple micro-language.  For example:
 
 `table.find( { "country" :"china" } )` Finds documents with the country field equal to `"china"`
+
 `table.find( { "country" : "china" } , ["first_name" , "last_name" , "login"] )` Finds documents with country equal to `"china"`, returning only the specified name and login fields.
 
 `table.eachDocument( { "country" :"china" }, callback )` Iterates over all documents with counter equal to `"china"`.
-table.eachDocument( { "country" : "china" } , ["first_name" , "last_name" , "login"], callback ) Same as above, but only returns a few fields.
+
+`table.eachDocument( { "country" : "china" } , ["first_name" , "last_name" , "login"], callback )` Same as above, but only returns a few fields.
 
 ## Sample conditions
 
@@ -110,6 +112,7 @@ that scalar values are short-cuts for an equality test with those
 values.
 
 For example, equality with a scalar value can have a short-cut expression:
+
 ```json
 { "country" : "China" } // country == "China"
 ```
@@ -121,11 +124,13 @@ But testing for equality with structures is not allowed:
 ~~`{ "country" : {"bag": "China"} }`~~
 
 Instead, do this:
+
 ```json
 { "country" : {"$eq": ["China","United States"]} } 
 ```
 
 Other tests are also available
+
 ```json
 { "age" : { "$gt" : 34 } } // age > 34
 { "age" : { "$gte" : 34 } } // age >= 34
