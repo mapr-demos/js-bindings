@@ -147,18 +147,19 @@ The complete list of available operators is shown in the following table, but yo
 
 Operator | Meaning
 :--------|:--------
-$eq, $equal, = | Is equal to. 
-$ne, $neq, != | Not equal to. 
-$lt, $less, < | Less than. Should work for either strings or numbers, but comparing strings to numbers is not defined.
-$lte, $le, <= | Less than or equal.
-$gt, $greater, > | Greater than.
-$ge, $gte, >= | Greater than or equal
-$between | The value of the field should be a list of two values. {x: {$between:[u,v]}} is equivalent to {x: {$ge:u}, x:{$le:v}}.
-$in | The value of the field is in a literal list. {x: {$in: [1,2,34]}} is true if x is any of 1, 2 or 34.
-!$in | Not in.
-$exists | The field exists or not according to the the value supplied. Note that missing is different from null.
-$like, $matches | The value of the field matches a regular expression.
-!$like, !$matches | The value of the field does not match a regular expression.
+`$eq, $equal, =` | Is equal to. 
+`$ne, $neq, !=` | Not equal to. 
+`$lt, $less, <` | Less than. Should work for either strings or numbers, but comparing strings to numbers is not defined.
+`$lte, $le, <=` | Less than or equal.
+`$gt, $greater, >` | Greater than.
+`$ge, $gte, >=` | Greater than or equal
+`$between` | The value of the field should be a list of two values. The expression `{"x": {"$between":[u,v]}}` is equivalent to `{"x": {"$and":[{$ge:u}, {$le:v}]} }`.
+`$in` | The value of the field is in a literal list. {x: {$in: [1,2,34]}} is true if x is any of 1, 2 or 34.
+`!$in` | Not in.
+`$exists` | The field exists or not according to the the value supplied. Note that missing is different from null.
+`$like, $matches` | The value of the field matches a regular expression.
+`!$like, !$matches` | The value of the field does not match a regular expression.
+`$and`, `$or` | Combining forms that combine multiple conditions. The argument is a list of condition expressions. 
 ---------------------	
 
 If you want to set a condition on multiple fields, simply include all of the tests in a single object
@@ -168,7 +169,7 @@ If you want to set a condition on multiple fields, simply include all of the tes
 
 Note that if you need multiple conditions on a single field, you can use the `$and` and `$or` combining forms:
 ```json
-{ "country" : {"$or":{"China", "US"}, "age": {"$and":{"$ge":30, "$lt":40} } } 
+{ "country" : {"$or":{"China", "US"}, "age": {"$and":[{"$ge":30}, {"$lt":40}] } } 
 ```
 
 In contrast, if you want any of several conditions to be satisfied, simply put all the alternatives in a list.
