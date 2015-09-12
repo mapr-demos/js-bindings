@@ -72,7 +72,7 @@ or successful update. On success, the err argument will be null.
 Any JavaScript `Object` can be  sent to the database as a complete document. For mutations, there is a JSON encoded 
 micro-language to describe which fields are changed and how. For example, this might be a document
 
-```javascript
+```json
 var doc = {
   "_id" : "00123",
   "name" : "John Doe",
@@ -102,19 +102,31 @@ table.eachDocument( { "country" : "china" } , ["first_name" , "last_name" , "log
 
 ## Sample conditions
 
-Conditions are created fairly conventionally and have several forms of short-cuts to handle very common cases. In general, a condition looks like a mirror of some of the fields in the document except that values are replaced by comparison functions. The most common short-cut is that scalar values are short-cuts for an equality test with those values.
+Conditions are created fairly conventionally and have several forms of
+short-cuts to handle very common cases. In general, a condition looks
+like a mirror of some of the fields in the document except that values
+are replaced by comparison functions. The most common short-cut is
+that scalar values are short-cuts for an equality test with those
+values.
 
 For example, equality with a scalar value can have a short-cut expression:
+```json
 { "country" : "China" } // country == "China"
+```
 
 But testing for equality with structures is not allowed:
-~~{ "country" : ["China", "United States"] } ~~
-~~{ "country" : {"bag": "China"} } ~~
+
+~~`{ "country" : ["China", "United States"] }`~~
+
+~~`{ "country" : {"bag": "China"} }`~~
 
 Instead, do this:
+```json
 { "country" : {"$eq": ["China","United States"]} } 
+```
 
 Other tests are also available
+```json
 { "age" : { "$gt" : 34 } } // age > 34
 { "age" : { "$gte" : 34 } } // age >= 34
 { "age" : { "$lt" : 34 } } // age < 34
@@ -124,6 +136,7 @@ Other tests are also available
 { "age" : { "$in" : [20,25,30] } } // IN [20, 25, 30]
 { "age" : { "$exists" : true} }
 { "age" : { "$exists" : false} }
+```
 
 The complete list of available operators is shown in the following table, but you should note that there is no implicit conversion of types done. Note also that comparison with null is done as in Java, not as in SQL.  This means that null == null.
 
@@ -144,23 +157,23 @@ $like, $matches | The value of the field matches a regular expression.
 ---------------------	
 
 If you want to set a condition on multiple fields, simply include all of the tests in a single object
-```javascript
+```json
 { "country" : "China", "age" : 34 } // country = "China" AND age = 34
 ```
 
 Note that if you need multiple conditions on a single field, you can use the `$and` and `$or` combining forms:
-```javascript
+```json
 { "country" : {"$or":{"China", "US"}, "age": {"$and":{"$ge":30, "$lt":40} } } 
 ```
 
 In contrast, if you want any of several conditions to be satisfied, simply put all the alternatives in a list.
-```javascript
+```json
 [ condition1, condition2, ... ] // condition1 OR condition2
 ```
 Extension of this mechanism to other tests is an area of active discussion.
 ## Mutation
 The mutation object is sent to the server and all operations are used on the server side. 
-```javascript
+```json
 {"field" : { "$set" : "value"}  }
 {"age" : { "$set" : 34}  }  // set age to 34
 {"age" : { "$set" : 34} , "country" : { "$set": "USA"}  }  // set age to 34 and country to USA
