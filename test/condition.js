@@ -201,6 +201,33 @@ describe('Condition', function () {
       });
 
     });
+
+    describe('matches', function () {
+
+      var regexp = '/\n+/';
+
+      condition.conditionMap.matches.forEach(function (op) {
+        var jsonForTest = getJsonForTest('fName', op, regexp);
+        it(readableIt(jsonForTest, 'fName', op, regexp), function () {
+          var c = new condition(jsonForTest);
+          assert.equal(c.jCondition.toStringSync(), '(fName LIKE "/\\n+/")');
+        });
+      });
+    });
+
+    describe('notMatches', function () {
+
+      var regexp = '/\n+/';
+
+      condition.conditionMap.notMatches.forEach(function (op) {
+        var jsonForTest = getJsonForTest('fName', op, regexp);
+        it(readableIt(jsonForTest, 'fName', op, regexp), function () {
+          var c = new condition(jsonForTest);
+          assert.equal(c.jCondition.toStringSync(), '(fName NOT_LIKE "/\\n+/")');
+        });
+      });
+    });
+
   });
 
   describe('Combined', function () {
