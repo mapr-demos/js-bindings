@@ -224,6 +224,117 @@ describe('Condition', function () {
           });
         });
       });
+
+    });
+
+    describe('$and, $or', function() {
+
+      [
+        {
+          cond: {'age': {'$and': {'$ge': 30, '$lt': 40}}},
+          e: '((age >= {"$numberLong":30}) and (age < {"$numberLong":40}))'
+        },
+        {
+          cond: {'country': {'$or': ['China', 'US']}, 'age': {'$and': {'$ge': 30, '$lt': 40}}},
+          e: '(((country = "China") or (country = "US")) and ((age >= {"$numberLong":30}) and (age < {"$numberLong":40})))'
+        },
+        {
+          cond: {'age': {'$and': {'$ge': 30, '!$in': [40, 50]}}},
+          e: '((age >= {"$numberLong":30}) and ((age != {"$numberLong":40}) and (age != {"$numberLong":50})))'
+        },
+        {
+          cond: {
+            'age': {
+              '$or': [ { '$eq': 30 }, { '$eq': 60 } ]
+            }
+          },
+          e: '((age = {"$numberLong":30}) or (age = {"$numberLong":60}))'
+        },
+        {
+          cond: {
+            'age': {
+              '$or': [
+                {
+                  '$and': {
+                    '$ge': 30,
+                    '$lt': 40
+                  }
+                },
+                {
+                  '$and': {
+                    '$ge': 50,
+                    '$lt': 60
+                  }
+                }
+              ]
+            }
+          },
+          e: '(((age >= {"$numberLong":30}) and (age < {"$numberLong":40})) or ((age >= {"$numberLong":50}) and (age < {"$numberLong":60})))'
+        },
+        {
+          cond: {
+            'age': {
+              '$or': [
+                {
+                  '$and': {
+                    '$ge': 30,
+                    '$lt': 40
+                  }
+                },
+                {
+                  '$in': [50, 60]
+                }
+              ]
+            }
+          },
+          e: '(((age >= {"$numberLong":30}) and (age < {"$numberLong":40})) or ((age = {"$numberLong":50}) or (age = {"$numberLong":60})))'
+        },
+        {
+          cond: {
+            'age': {
+              '$or': [
+                {
+                  '$and': {
+                    '$ge': 30,
+                    '$lt': 40
+                  }
+                },
+                {
+                  '$between': [50, 60]
+                }
+              ]
+            }
+          },
+          e: '(((age >= {"$numberLong":30}) and (age < {"$numberLong":40})) or ((age >= {"$numberLong":50}) and (age <= {"$numberLong":60})))'
+        },
+        {
+          cond: [
+            {
+              'age': {
+                '$and': {
+                  '$ge': 30,
+                  '$lte': 40
+                }
+              }
+            },
+            {
+              'age': {
+                '$and': {
+                  '$ge': 50,
+                  '$lte': 60
+                }
+              }
+            }
+          ],
+          e: '(((age >= {"$numberLong":30}) and (age <= {"$numberLong":40})) or ((age >= {"$numberLong":50}) and (age <= {"$numberLong":60})))'
+        }
+      ].forEach(function(test) {
+          it('JSON -> ' + JSON.stringify(test.cond), function () {
+            var c = new condition(test.cond);
+            assert.equal(c.jCondition.toStringSync(), test.e);
+          });
+      });
+
     });
 
     describe('custom methods call', function () {
