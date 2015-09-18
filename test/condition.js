@@ -1,6 +1,7 @@
 var assert = require('chai').assert;
 var maprdb = require('../index');
 var condition = require('../lib/condition');
+var errorsManager = require('../lib/utils/errorsManager');
 
 describe('Condition', function () {
 
@@ -163,7 +164,7 @@ describe('Condition', function () {
         var jsonForTest = getJsonForTest('age', op, age);
         it(readableIt(jsonForTest, 'age', op, age), function () {
           var c = new condition(jsonForTest);
-          assert.equal(c.toStringSync(), '((age = {"$numberLong":' + age[0] + '}) or (age = {"$numberLong":' + age[1] + '}))');
+          assert.equal(c.toStringSync(), '(age IN [{"$numberLong":' + age[0] + '}, {"$numberLong":' + age[1] + '}])');
         });
       });
 
@@ -177,7 +178,7 @@ describe('Condition', function () {
         var jsonForTest = getJsonForTest('age', op, age);
         it(readableIt(jsonForTest, 'age', op, age), function () {
           var c = new condition(jsonForTest);
-          assert.equal(c.toStringSync(), '((age != {"$numberLong":' + age[0] + '}) and (age != {"$numberLong":' + age[1] + '}))');
+          assert.equal(c.toStringSync(), '(age NOT_IN [{"$numberLong":' + age[0] + '}, {"$numberLong":' + age[1] + '}])');
         });
       });
 
@@ -193,10 +194,10 @@ describe('Condition', function () {
             assert.equal(c.toStringSync(), '(age ' + (val ? '!=' : '=') + ' null)');
           });
         });
-        it(readableIt(getJsonForTest('age', op, ''), 'age', op, '') + ' should throw error (not a boolean)', function () {
+        it(readableIt(getJsonForTest('age', op, ''), 'age', op, '') + ' should throw ArgumentTypesWhiteListError', function () {
           assert.throw(function () {
             new condition(getJsonForTest('age', op, ''));
-          });
+          }, errorsManager.argumentTypesWhiteListError().constructor);
         });
       });
 
@@ -226,6 +227,169 @@ describe('Condition', function () {
           assert.equal(c.toStringSync(), '(fName NOT_LIKE "/\\n+/")');
         });
       });
+    });
+
+    describe('_is', function () {
+      [
+        {
+          v: 1,
+          m: 'number'
+        },
+        {
+          v: true,
+          m: 'boolean'
+        },
+        {
+          v: '',
+          m: 'string'
+        },
+        {
+          v: new Date(),
+          m: 'date'
+        }
+      ].forEach(function (test) {
+          it('`is` with "' + test.m + '" shouldn\'t throw any errors', function () {
+            assert.doesNotThrow(function() {
+              new condition({f: {$eq: test.v}});
+            });
+          });
+      });
+
+      [
+        {f: {'$eq': {}}},
+        {f: {'$eq': {a: 1}}},
+        {f: {'$eq': []}},
+        {f: {'$eq': [{a: 1}]}},
+        {f: {'$eq': ['1']}}
+      ].forEach(function (test) {
+          it(JSON.stringify(test) + ' throws an ArgumentTypesBlackListError', function () {
+            assert.throw(function () {
+              new condition(test);
+            }, errorsManager.argumentTypesBlackListError().constructor);
+          });
+        });
+
+      it('null as value (throws NullTypeError)', function () {
+        assert.throw(function () {
+          new condition({f: {'$eq': null}});
+        }, errorsManager.nullTypeError().constructor);
+      });
+
+    });
+
+    describe('_in/_nin', function () {
+
+      ['$in', '!$in'].forEach(function (fName) {
+
+        describe(fName, function () {
+          [
+            {
+              v: 1,
+              m: 'number'
+            },
+            {
+              v: true,
+              m: 'boolean'
+            },
+            {
+              v: '',
+              m: 'string'
+            },
+            {
+              v: new Date(),
+              m: 'date'
+            }
+          ].forEach(function (test) {
+              var jsonForTest = getJsonForTest('fName', fName, test.v);
+              it('JSON -> ' + JSON.stringify(jsonForTest) + '    `' + fName + '` with "' + test.m + '" should throw ArgumentTypesWhiteListError', function () {
+                assert.throw(function() {
+                  new condition(jsonForTest);
+                }, errorsManager.argumentTypesWhiteListError().constructor);
+              });
+            });
+        });
+
+      });
+
+    });
+
+    describe('_exists', function () {
+      [
+        {f: {'$exists': null}},
+        {f: {'$exists': ''}},
+        {f: {'$exists': 1234}},
+        {f: {'$exists': {}}},
+        {f: {'$exists': {a: 1}}},
+        {f: {'$exists': []}},
+        {f: {'$exists': [{a: 1}]}},
+        {f: {'$exists': ['1']}}
+      ].forEach(function (json) {
+          it(JSON.stringify(json) + ' throws an ArgumentTypesWhiteListError', function () {
+            assert.throw(function () {
+              new condition(json);
+            }, errorsManager.argumentTypesWhiteListError().constructor);
+          });
+        });
+    });
+
+    describe('_between', function () {
+
+      [
+        {f: {'$between': {}}},
+        {f: {'$between': []}},
+        {f: {'$between': ['a']}},
+        {f: {'$between': ['a', 'b']}},
+        {f: {'$between': [1, 'b']}},
+        {f: {'$between': ['a', 2]}}
+      ].forEach(function (json) {
+          it(JSON.stringify(json) + ' throws an error (not allowed value for `between`)', function () {
+            assert.throw(function () {
+              new condition(json);
+            }, 'array of the two numbers');
+          });
+      });
+
+    });
+
+    describe('not supported notation key', function () {
+
+      var json = {k: {'$not_support_key': ''}};
+      it(JSON.stringify(json) + '  should throw NotSupportedNotationKeyError', function () {
+        assert.throw(function () {
+          new condition(json);
+        }, errorsManager.notSupportedNotationKeyError().constructor);
+      });
+
+    });
+
+    describe('bad constructor arguments', function () {
+
+      [
+        ['', ''],
+        [{}, ''],
+        [],
+        true,
+        123,
+        '',
+        null
+      ].forEach(function (value) {
+        it(JSON.stringify(value) + '  should throw ConstructorArgumentsError', function () {
+          assert.throw(function () {
+            new condition(value);
+          }, errorsManager.constructorArgumentsError().constructor);
+        });
+      });
+
+      it('empty conditions object', function () {
+        var c = new condition({});
+        assert.equal(c.toStringSync(), '<EMPTY>');
+      });
+
+      it('empty conditions array', function () {
+        var c = new condition([{}, {}]);
+        assert.equal(c.toStringSync(), '<EMPTY>');
+      });
+
     });
 
   });
@@ -261,14 +425,13 @@ describe('Condition', function () {
           cond: {'age': {'$and': {'$ge': 30, '$lt': 40}}},
           e: '((age >= {"$numberLong":30}) and (age < {"$numberLong":40}))'
         },
-        // skip for a while
-        // {
-        //   cond: {'country': {'$or': ['China', 'US']}, 'age': {'$and': {'$ge': 30, '$lt': 40}}},
-        //   e: '(((country = "China") or (country = "US")) and ((age >= {"$numberLong":30}) and (age < {"$numberLong":40})))'
-        // },
+        {
+          cond: {'country': {'$or': ['China', 'US']}, 'age': {'$and': {'$ge': 30, '$lt': 40}}},
+          e: '(((country = "China") or (country = "US")) and ((age >= {"$numberLong":30}) and (age < {"$numberLong":40})))'
+        },
         {
           cond: {'age': {'$and': {'$ge': 30, '!$in': [40, 50]}}},
-          e: '((age >= {"$numberLong":30}) and ((age != {"$numberLong":40}) and (age != {"$numberLong":50})))'
+          e: '((age >= {"$numberLong":30}) and (age NOT_IN [{"$numberLong":40}, {"$numberLong":50}]))'
         },
         {
           cond: {
@@ -277,6 +440,14 @@ describe('Condition', function () {
             }
           },
           e: '((age = {"$numberLong":30}) or (age = {"$numberLong":60}))'
+        },
+        {
+          cond: {
+            'age': {
+              '$or': [ { '$eq': 30 } ]
+            }
+          },
+          e: '(age = {"$numberLong":30})'
         },
         {
           cond: {
@@ -315,7 +486,7 @@ describe('Condition', function () {
               ]
             }
           },
-          e: '(((age >= {"$numberLong":30}) and (age < {"$numberLong":40})) or ((age = {"$numberLong":50}) or (age = {"$numberLong":60})))'
+          e: '(((age >= {"$numberLong":30}) and (age < {"$numberLong":40})) or (age IN [{"$numberLong":50}, {"$numberLong":60}]))'
         },
         {
           cond: {
@@ -361,18 +532,6 @@ describe('Condition', function () {
             var c = new condition(test.cond);
             assert.equal(c.toStringSync(), test.e);
           });
-      });
-
-    });
-
-    describe('custom methods call', function () {
-
-      it('should parse correctly (with $date)', function () {
-
-        var c = new condition();
-        assert.equal(c.and().is('some_date', 'GREATER_OR_EQUAL', new Date('2011-05-01')).
-            is('some_date', 'LESS', new Date('2015-12-28')).
-            close().jCondition.toStringSync(), '((some_date >= {"$date":"2011-05-01T00:00:00.000Z"}) and (some_date < {"$date":"2015-12-28T00:00:00.000Z"}))');
       });
 
     });

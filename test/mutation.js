@@ -2,11 +2,13 @@ var assert = require('chai').assert;
 var maprdb = require('../index');
 var mutation = require('../lib/mutation');
 var java = require('../lib/jexports/javaInstance').javaInstance();
+var errorsManager = require('../lib/utils/errorsManager');
 
 describe('Mutation', function () {
 
   describe('parse json', function () {
     [
+      {},
       {'field': {'$set': 'value'}},
       {'age': {'$set': 34}},
       {'age': {'$set': true}},
@@ -58,34 +60,40 @@ describe('Mutation', function () {
 
   describe('errors thrown', function () {
 
-    it('append not a string or array', function () {
+    it('append not a string or array (should throw ArgumentTypesWhiteListError)', function () {
       assert.throw(function () {
         new mutation({'field': {$append: 1}});
-      });
+      }, errorsManager.argumentTypesWhiteListError().constructor);
     });
 
-    it('inc not a number', function () {
+    it('inc not a number (should throw ArgumentTypesWhiteListError)', function () {
       assert.throw(function () {
         new mutation({'field': {$inc: ''}});
-      });
+      }, errorsManager.argumentTypesWhiteListError().constructor);
     });
 
-    it('bad mutation key', function () {
+    it('bad mutation key (should throw InvalidNotationError)', function () {
       assert.throw(function () {
         new mutation({'field': 'value'});
-      });
+      }, errorsManager.invalidNotationError().constructor);
     });
 
-    it('bad constructor arguments', function () {
+    it('bad constructor arguments (should throw ConstructorArgumentsError)', function () {
       assert.throw(function () {
         new mutation('value');
-      });
+      }, errorsManager.constructorArgumentsError().constructor);
     });
 
-    it('empty constructor arguments', function () {
+    it('empty constructor arguments (should throw ConstructorArgumentsError)', function () {
       assert.throw(function () {
         new mutation();
-      });
+      }, errorsManager.constructorArgumentsError().constructor);
+    });
+
+    it('should throw NotSupportedNotationKeyError', function () {
+      assert.throw(function () {
+        new mutation({k: {'$not_support_key': ''}});
+      }, errorsManager.notSupportedNotationKeyError().constructor);
     });
 
   });

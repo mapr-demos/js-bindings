@@ -40,4 +40,21 @@ describe('typeChecker', function () {
       });
   });
 
+  describe('checkEachType', function () {
+    [
+      {list: '', types: 'string', e: false},
+      {list: true, types: 'string', e: false},
+      {list: 123, types: 'string', e: false},
+      {list: {}, types: 'string', e: false},
+      {list: [], types: 'string', e: false},
+      {list: [''], types: 'string', e: true},
+      {list: ['', 1], types: ['string', 'number'], e: true},
+      {list: [{}, {}], types: ['object'], e: true}
+    ].forEach(function(test) {
+        it('checked value: ' + JSON.stringify(test.list) + ' allowed types: ' + JSON.stringify(test.types), function () {
+          assert.equal(typeChecker.checkEachType(test.list, test.types), test.e);
+        });
+      });
+  });
+
 });
