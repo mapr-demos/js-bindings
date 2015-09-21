@@ -1,6 +1,7 @@
 var assert = require('chai').assert;
 var maprdb = require('../index');
 var table = require('../lib/table');
+var errorsManager = require('../lib/utils/errorsManager');
 
 describe('Table', function () {
 
@@ -189,4 +190,85 @@ describe('Table', function () {
     });
   });
 
+  describe('table#update(_id, mutation, callback)', function() {
+    beforeEach(function(done) {
+      this.t = maprdb.getTable(tableNameForTests);
+      this.t.insertAll([
+        { _id: '1', name: 'John'},
+        { _id: '2', name: 'Sam', age: 40, city: 'NY', interests: ['Coding', 'Bike']},
+      ], function(err) {
+        assert.isNull(err, 'no errors thrown');
+        done();
+      });
+    });
+
+    afterEach(function() {
+      this.t = null;
+    });
+
+    [
+      {
+        mutation: {'age': {$inc: 1}},
+        id: '2',
+        e: {
+          errorE: false,
+          result: { _id: '2', name: 'Sam', age: 41, city: 'NY', interests: ['Coding', 'Bike']}
+        }
+      },
+      {
+        mutation: {'age': {$inc: -10 }, 'city': { $delete: true}},
+        id: '2',
+        e: {
+          errorE: false,
+          result: { _id: '2', name: 'Sam', age: 30, interests: ['Coding', 'Bike']}
+        }
+      },
+      {
+        mutation: {name: {$append: ' Joe'}, age: {$setOrReplace: '20'}},
+        id: '2',
+        e: {
+          errorE: false,
+          result: { _id: '2', name: 'Sam Joe', age: '20', city: 'NY', interests: ['Coding', 'Bike'] }
+        }
+      },
+      {
+        mutation: {interests: {$append: ['Cars', 'Motobike'] }, role: { $set: 'admin' } },
+        id: '2',
+        e: {
+          errorE: false,
+          result: { _id: '2', name: 'Sam', age: 40, city: 'NY', interests: ['Coding', 'Bike', 'Cars', 'Motobike'], role: 'admin' }
+        }
+      },
+      {
+        mutation: {_id: { $inc: 2}},
+        id: '1',
+        e: {
+          errorE: true,
+          result: {},
+          errorManager: errorsManager.notSupportedNotationKeyError().constructor
+        },
+        m: 'cannot mutate `_id`, error should thrown'
+      }
+    ].forEach(function(test) {
+      var message = test.m || ('passed mutation:' + JSON.stringify(test.mutation) + ' result:' + JSON.stringify(test.e.result));
+      it(message, function(done) {
+        var self = this;
+        try {
+          self.t.update(test.id, test.mutation, function(err) {
+            self.t.findById(test.id, function(doc, err) {
+              assert.deepEqual(doc, test.e.result, 'document after mutation');
+              done();
+            });
+          });
+        } catch (e) {
+          if (test.e.errorE) {
+            assert.equal(e.name, test.e.errorManager.name);
+            done();
+          } else {
+            assert.fail();
+          }
+        }
+      });
+    });
+  });
 });

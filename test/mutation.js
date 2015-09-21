@@ -38,24 +38,11 @@ describe('Mutation', function () {
     ].forEach(function (json) {
         it(JSON.stringify(json), function () {
           var m = new mutation(json);
-          assert.ok(java.instanceOf(m.jMutation, 'com.mapr.db.Mutation'));
+          assert.ok(java.instanceOf(m, 'com.mapr.db.Mutation'));
           m.build();
-          assert.ok(java.instanceOf(m.jMutation, 'com.mapr.db.Mutation'));
+          assert.ok(java.instanceOf(m, 'com.mapr.db.Mutation'));
         });
       });
-  });
-
-  describe('manual input', function () {
-
-    var m = new mutation({});
-    m.set('f1', 'v1').set('f2', [1, 2]).
-      setOrReplace('f3', 3).setOrReplace('f4', '4').
-      append('f6', '6').append('f10', [1, 2, 3]).
-      increment('f7', 1).increment('f8', -1).
-      delete('f9');
-    assert.ok(java.instanceOf(m.jMutation, 'com.mapr.db.Mutation'));
-    m.build();
-    assert.ok(java.instanceOf(m.jMutation, 'com.mapr.db.Mutation'));
   });
 
   describe('errors thrown', function () {
