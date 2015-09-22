@@ -40,7 +40,7 @@ describe('Table', function () {
           }
         ]
       }, function() {
-        t.findById('0123', function(document, err) {
+        t.findById('0123', function(err, document) {
           assert.equal(document._id, '0123', 'inserted document `_id` field validation');
           assert.equal(document.name, 'John', 'inserted document `name` field validation');
           assert.equal(document.lastName, 'Doe', 'inserted document `lastName` validation');
@@ -59,6 +59,47 @@ describe('Table', function () {
           ], 'inserted document `interests` validation');
           done();
         });
+      });
+    });
+  });
+
+  describe('table#findById(id, *fields, callback)', function() {
+    beforeEach(function(done) {
+      this.t = maprdb.getTable(tableNameForTests);
+      this.t.insertAll([
+        { _id: '1', name: 'John', age: 34 , city: 'Denver'},
+        { _id: '2', name: 'Sam', age: 40, city: 'NY'},
+        { _id: '3', name: 'Sam', age: 21, city: 'LA' }
+      ], function(err) {
+        assert.isNull(err, 'no errors thrown');
+        done();
+      });
+    });
+
+    afterEach(function() {
+      this.t = null;
+    });
+
+    [
+      {
+        args: ['1'],
+        m: 'method called with signature (id, callback)',
+        e: { _id: '1', name: 'John', age: 34 , city: 'Denver'}
+      },
+      {
+        args: ['2', ['name', 'age']],
+        m: 'method called with signature (id, fields, callback)',
+        e: { _id: '2', age: 40, name: 'Sam'}
+      }
+    ].forEach(function(test) {
+      it(test.m, function (done) {
+        var calledArgs = test.args;
+        var wrapFn = function(err, doc) {
+          assert.deepEqual(doc, test.e);
+          done();
+        };
+        calledArgs.push(wrapFn);
+        this.t.findById.apply(this.t, calledArgs);
       });
     });
   });
@@ -255,7 +296,7 @@ describe('Table', function () {
         var self = this;
         try {
           self.t.update(test.id, test.mutation, function(err) {
-            self.t.findById(test.id, function(doc, err) {
+            self.t.findById(test.id, function(err, doc) {
               assert.deepEqual(doc, test.e.result, 'document after mutation');
               done();
             });
@@ -270,5 +311,64 @@ describe('Table', function () {
         }
       });
     });
+  });
+
+  describe('table#eachDocument(condition, fields, callback)', function () {
+    beforeEach(function(done) {
+      this.t = maprdb.getTable(tableNameForTests);
+      this.t.insertAll([
+        { _id: '1', name: 'John', age: 34 , city: 'Denver'},
+        { _id: '2', name: 'Sam', age: 40, city: 'NY'},
+        { _id: '3', name: 'Sam', age: 21, city: 'LA' },
+        { _id: '4', name: 'Ben', age: 16, city: 'Oslo' }
+      ], function(err) {
+        assert.isNull(err, 'no errors thrown');
+        done();
+      });
+    });
+
+    afterEach(function() {
+      this.t = null;
+    });
+
+    // @TODO better handling implemenation than setTimeout
+    describe('#eachDocument', function() {
+      [
+        {
+          args: [['name']],
+          m: 'called with signature (fields, callback)',
+          e: [
+            { _id: '1', name: 'John'},
+            { _id: '2', name: 'Sam'},
+            { _id: '3', name: 'Sam'},
+            { _id: '4', name: 'Ben'}
+          ]
+        },
+        {
+          args: [{name: {$eq: 'John'}}, ['age', 'name']],
+          m: 'called with signature (fields, condition, callback)',
+          e: [
+            { _id: '1', name: 'John', age: 34}
+          ]
+        },
+      ].forEach(function(test) {
+        it(test.m, function(done) {
+          var res = [];
+          var calledArgs = test.args;
+          var wrapFn = function(err, doc) {
+            res.push(doc);
+          };
+          calledArgs.push(wrapFn);
+
+          this.t.eachDocument.apply(this.t, calledArgs);
+          setTimeout(function() {
+            assert.deepEqual(res, test.e, 'data validation');
+            done();
+          }, 1000);
+        });
+      });
+
+    });
+
   });
 });

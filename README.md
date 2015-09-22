@@ -11,6 +11,12 @@ Install *maven* version >= 3.1.x and make sure that installed version is availab
 
 This package has dependencies which use native addons. Please check [node-gyp installation section](https://github.com/nodejs/node-gyp#installation)
 
+Change permissions for directory */mapr/demo.mapr.com/apps*.
+
+```
+chmod -R 777 /mapr/demo.mapr.com/apps
+```
+
 ```
 npm i
 ```
