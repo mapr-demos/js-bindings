@@ -331,7 +331,6 @@ describe('Table', function () {
       this.t = null;
     });
 
-    // @TODO better handling implemenation than setTimeout
     describe('#eachDocument', function() {
       [
         {
@@ -353,22 +352,131 @@ describe('Table', function () {
         },
       ].forEach(function(test) {
         it(test.m, function(done) {
+          this.timeout(5000);
           var res = [];
           var calledArgs = test.args;
           var wrapFn = function(err, doc) {
             res.push(doc);
+            if (res.length === test.e.length) {
+              assert.deepEqual(res, test.e, 'data validation');
+              done();
+            }
           };
           calledArgs.push(wrapFn);
 
           this.t.eachDocument.apply(this.t, calledArgs);
-          setTimeout(function() {
-            assert.deepEqual(res, test.e, 'data validation');
-            done();
-          }, 1000);
         });
       });
+    });
+  });
 
+  describe('table#stream', function() {
+    beforeEach(function(done) {
+      this.t = maprdb.getTable(tableNameForTests);
+      this.t.insertAll([
+        { _id: '1', name: 'John', age: 34 , city: 'Denver'},
+        { _id: '2', name: 'Sam', age: 40, city: 'NY'},
+        { _id: '3', name: 'Sam', age: 21, city: 'LA' },
+        { _id: '4', name: 'Ben', age: 16, city: 'Oslo' }
+      ], function(err) {
+        assert.isNull(err, 'no errors thrown');
+        done();
+      });
     });
 
+    afterEach(function() {
+      this.t = null;
+    });
+
+    [
+      {
+        args: [['name']],
+        m: 'called with signature (fields, streamHandlers)',
+        e: [
+          { _id: '1', name: 'John'},
+          { _id: '2', name: 'Sam'},
+          { _id: '3', name: 'Sam'},
+          { _id: '4', name: 'Ben'}
+        ]
+      },
+      {
+        args: [{name: {$eq: 'John'}}, ['age', 'name']],
+        m: 'called with signature (condition, fields, streamHandlers)',
+        e: [
+          { _id: '1', name: 'John', age: 34}
+        ]
+      },
+    ].forEach(function(test) {
+      it(test.m, function(done) {
+        // to be sure that
+        this.timeout(5000);
+        var res = [];
+        var calledArgs = test.args;
+        var wrapFn = function(err, doc) {
+          res.push(doc);
+          if (res.length === test.e.length) {
+            assert.deepEqual(res, test.e, 'data validation');
+            done();
+          }
+        };
+        calledArgs.push({
+          read: wrapFn
+        });
+
+        this.t.stream.apply(this.t, calledArgs);
+      });
+    });
+  });
+
+  describe('table#delete', function() {
+    beforeEach(function(done) {
+      this.t = maprdb.getTable(tableNameForTests);
+      this.t.insertAll([
+        { _id: '1', name: 'John', age: 34 , city: 'Denver'},
+        { _id: '2', name: 'Sam', age: 40, city: 'NY'},
+        { _id: '3', name: 'Sam', age: 21, city: 'LA' },
+        { _id: '4', name: 'Ben', age: 16, city: 'Oslo' }
+      ], function(err) {
+        assert.isNull(err, 'no errors thrown');
+        done();
+      });
+    });
+
+    afterEach(function() {
+      this.t = null;
+    });
+
+    [
+      {
+        _id: '1',
+        e: [ '2', '3', '4']
+      },
+      {
+        _id: '2',
+        e: [ '1', '3', '4']
+      },
+      {
+        _id: '3',
+        e: [ '1', '2', '4']
+      },
+      {
+        _id: '4',
+        e: [ '1', '2', '3']
+      }
+    ].forEach(function(test) {
+      it('should remove document with _id ' + test._id, function(done) {
+        var self = this;
+        this.t.delete(test._id, function(err) {
+          assert.isUndefined(err, 'no error thrown');
+          self.t.flush(function() {
+            self.t.find(function(errFind, docs) {
+              assert.isUndefined(errFind, 'no error thrown');
+              assert.sameMembers(docs.map(function(item) { return item._id; }), test.e);
+              done();
+            });
+          });
+        });
+      });
+    });
   });
 });
