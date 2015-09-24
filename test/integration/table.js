@@ -1,7 +1,7 @@
 var assert = require('chai').assert;
-var maprdb = require('../index');
-var table = require('../lib/table');
-var errorsManager = require('../lib/utils/errorsManager');
+var maprdb = require('../../index');
+var table = require('../../lib/table');
+var errorsManager = require('../../lib/utils/errorsManager');
 
 describe('Table', function () {
 
@@ -296,7 +296,7 @@ describe('Table', function () {
         var self = this;
         try {
           self.t.update(test.id, test.mutation, function(err) {
-            self.t.findById(test.id, function(err, doc) {
+            self.t.findById(test.id, function(err2, doc) {
               assert.deepEqual(doc, test.e.result, 'document after mutation');
               done();
             });
@@ -349,7 +349,7 @@ describe('Table', function () {
           e: [
             { _id: '1', name: 'John', age: 34}
           ]
-        },
+        }
       ].forEach(function(test) {
         it(test.m, function(done) {
           this.timeout(5000);

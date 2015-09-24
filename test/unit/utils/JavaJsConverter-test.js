@@ -1,7 +1,7 @@
-var java = require('../../lib/jexports/javaInstance').javaInstance();
+var java = require('../../../lib/jexports/javaInstance').javaInstance();
 var assert = require('chai').assert;
-var JavaJsConverter = require('../../lib/utils/JavaJsConverter');
-var typeChecker = require('../../lib/utils/typeChecker');
+var JavaJsConverter = require('../../../lib/utils/JavaJsConverter');
+var typeChecker = require('../../../lib/utils/typeChecker');
 
 describe('JavaJsConverter', function () {
 

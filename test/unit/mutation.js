@@ -1,8 +1,8 @@
 var assert = require('chai').assert;
-var maprdb = require('../index');
-var mutation = require('../lib/mutation');
-var java = require('../lib/jexports/javaInstance').javaInstance();
-var errorsManager = require('../lib/utils/errorsManager');
+var maprdb = require('../../index');
+var mutation = require('../../lib/mutation');
+var java = require('../../lib/jexports/javaInstance').javaInstance();
+var errorsManager = require('../../lib/utils/errorsManager');
 
 describe('Mutation', function () {
 

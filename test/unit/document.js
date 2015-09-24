@@ -1,6 +1,6 @@
 var assert = require('chai').assert;
-var document = require('../lib/document');
-var errorsManager = require('../lib/utils/errorsManager');
+var document = require('../../lib/document');
+var errorsManager = require('../../lib/utils/errorsManager');
 
 describe('document', function () {
 

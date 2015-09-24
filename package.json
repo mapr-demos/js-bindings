@@ -7,7 +7,8 @@
   "scripts": {
     "test": "mocha -t 0 --recursive",
     "postinstall": "mvn dependency:copy-dependencies",
-    "docs": "jsdoc -r -p lib/* -d ./docs"
+    "docs": "jsdoc -r -p lib/* -d ./docs",
+    "unit-test": "mocha test/unit -t 0 --recursive"
   },
   "repository": {
     "type": "git",

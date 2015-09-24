@@ -1,6 +1,6 @@
 var assert = require('chai').assert;
-var maprdb = require('../index');
-var table = require('../lib/table');
+var maprdb = require('../../index');
+var table = require('../../lib/table');
 
 describe('Table CRUD', function() {
 
