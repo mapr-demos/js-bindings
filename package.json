@@ -5,7 +5,7 @@
   "description": "maprdb javascript client",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -t 0 --recursive",
+    "test": "mocha -t 0 test/jvmOpts.js && mocha -t 0 --recursive test/**/",
     "postinstall": "mvn dependency:copy-dependencies",
     "docs": "jsdoc -r -p lib/* -d ./docs",
     "unit-test": "mocha test/unit -t 0 --recursive"
