@@ -74,9 +74,9 @@ describe('#methodOverload', function () {
 
     it('should add combo', function () {
       MethodOverloadInstance.addCombo('a','b','c');
-      assert.deepEqual(MethodOverloadInstance.combo, [['a','b','c']]);
+      assert.deepEqual(MethodOverloadInstance.combos, [['a','b','c']]);
       MethodOverloadInstance.addCombo('a','b');
-      assert.deepEqual(MethodOverloadInstance.combo, [['a','b','c'],['a','b']]);
+      assert.deepEqual(MethodOverloadInstance.combos, [['a','b','c'],['a','b']]);
 
     });
 
@@ -140,6 +140,13 @@ describe('#methodOverload', function () {
     beforeEach(function () {
       MethodOverloadInstance = new MethodOverload([{}, ['a', 'b', 'c'], function () {}]);
       MethodOverloadInstance = addCFC(MethodOverloadInstance);
+    });
+
+    it('should throw and Error', function () {
+      MethodOverloadInstance.castTo('callback', function() {});
+      assert.throw(function () {
+        MethodOverloadInstance.createArgumentsMap();
+      }, 'should return some value');
     });
 
     it('should map arguments CFC (one combo)', function () {
