@@ -99,6 +99,31 @@ maprdb.createTable('/apps/my_table')
 maprdb.maprHomeDir = '/another/dir'; // will throw error
 ```
 
+#### maprdb.jvmOptions
+
+Array of options to pass to the creation of the JVM.
+
+**Example**
+
+```javascript
+var maprdb = require('maprdb-js');
+maprdb.jvmOptions.push('-Xmx1024m');
+maprdb.jvmOptions.push('-DcustomOption=customValue);
+```
+
+#### maprdb.jvmClasspath
+
+Array of paths or jars to pass to the creation of the JVM.
+
+**Example**
+
+```javascript
+var maprdb = require('maprdb-js');
+maprdb.jvmClasspath.push('some.jar'); // add .jar file
+maprdb.jvmClasspath.push('Some.class'); // add .class file
+maprdb.jvmClasspath.pushDir('someDir'); // add all files from ./someDir
+```
+
 Run Tests
 ---
 ```

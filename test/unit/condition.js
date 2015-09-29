@@ -3,6 +3,23 @@ var maprdb = require('../../index');
 var condition = require('../../lib/condition');
 var errorsManager = require('../../lib/utils/errorsManager');
 
+var conditionMap =  {
+  eq:  ['$eq', '$equal', '='],
+  neq: ['$ne', '$neq', '!='],
+  le: ['$lt', '$less', '<'],
+  leq: ['$lte', '$le', '<='],
+  gt: ['$gt', '$greater', '>'],
+  gte: ['$ge', '$gte', '>='],
+  between: ['$between'],
+    in: ['$in'],
+  nin: ['!$in'],
+  exists: ['$exists'],
+  matches: ['$matches', '$like'],
+  notMatches: ['!$matches', '!$like'],
+  _or: ['$or'],
+  _and: ['$and']
+};
+
 describe('Condition', function () {
 
   describe('Single operator', function() {
@@ -42,7 +59,7 @@ describe('Condition', function () {
 
       var country = 'Canada';
 
-      condition.conditionMap.eq.forEach(function (op) {
+      conditionMap.eq.forEach(function (op) {
         var jsonForTest = getJsonForTest('country', op, country);
         it(readableIt(jsonForTest, 'country', op, country), function () {
           var c = new condition(jsonForTest);
@@ -61,7 +78,7 @@ describe('Condition', function () {
 
       var country = 'Canada';
 
-      condition.conditionMap.neq.forEach(function (op) {
+      conditionMap.neq.forEach(function (op) {
         var jsonForTest = getJsonForTest('country', op, country);
         it(readableIt(jsonForTest, 'country', op, country), function () {
           var c = new condition(jsonForTest);
@@ -75,7 +92,7 @@ describe('Condition', function () {
 
       var age = 12;
 
-      condition.conditionMap.le.forEach(function (op) {
+      conditionMap.le.forEach(function (op) {
         var jsonForTest = getJsonForTest('age', op, age);
         it(readableIt(jsonForTest, 'age', op, age), function () {
           var c = new condition(jsonForTest);
@@ -89,7 +106,7 @@ describe('Condition', function () {
 
       var age = 12;
 
-      condition.conditionMap.leq.forEach(function (op) {
+      conditionMap.leq.forEach(function (op) {
         var jsonForTest = getJsonForTest('age', op, age);
         it(readableIt(jsonForTest, 'age', op, age), function () {
           var c = new condition(jsonForTest);
@@ -103,7 +120,7 @@ describe('Condition', function () {
 
       var age = 12;
 
-      condition.conditionMap.gt.forEach(function (op) {
+      conditionMap.gt.forEach(function (op) {
         var jsonForTest = getJsonForTest('age', op, age);
         it(readableIt(jsonForTest, 'age', op, age), function () {
           var c = new condition(jsonForTest);
@@ -117,7 +134,7 @@ describe('Condition', function () {
 
       var age = 12;
 
-      condition.conditionMap.gte.forEach(function (op) {
+      conditionMap.gte.forEach(function (op) {
         var jsonForTest = getJsonForTest('age', op, age);
         it(readableIt(jsonForTest, 'age', op, age), function () {
           var c = new condition(jsonForTest);
@@ -131,7 +148,7 @@ describe('Condition', function () {
 
       var age = [12, 20];
 
-      condition.conditionMap.between.forEach(function (op) {
+      conditionMap.between.forEach(function (op) {
         var jsonForTest = getJsonForTest('age', op, age);
         it(readableIt(jsonForTest, 'age', op, age), function () {
           var c = new condition(jsonForTest);
@@ -160,7 +177,7 @@ describe('Condition', function () {
 
       var age = [12, 20];
 
-      condition.conditionMap.in.forEach(function (op) {
+      conditionMap.in.forEach(function (op) {
         var jsonForTest = getJsonForTest('age', op, age);
         it(readableIt(jsonForTest, 'age', op, age), function () {
           var c = new condition(jsonForTest);
@@ -174,7 +191,7 @@ describe('Condition', function () {
 
       var age = [12, 20];
 
-      condition.conditionMap.nin.forEach(function (op) {
+      conditionMap.nin.forEach(function (op) {
         var jsonForTest = getJsonForTest('age', op, age);
         it(readableIt(jsonForTest, 'age', op, age), function () {
           var c = new condition(jsonForTest);
@@ -186,7 +203,7 @@ describe('Condition', function () {
 
     describe('exists', function () {
 
-      condition.conditionMap.exists.forEach(function (op) {
+      conditionMap.exists.forEach(function (op) {
         [true, false].forEach(function (val) {
           var jsonForTest = getJsonForTest('age', op, val);
           it(readableIt(jsonForTest, 'age', op, val), function () {
@@ -207,7 +224,7 @@ describe('Condition', function () {
 
       var regexp = '/\n+/';
 
-      condition.conditionMap.matches.forEach(function (op) {
+      conditionMap.matches.forEach(function (op) {
         var jsonForTest = getJsonForTest('fName', op, regexp);
         it(readableIt(jsonForTest, 'fName', op, regexp), function () {
           var c = new condition(jsonForTest);
@@ -220,7 +237,7 @@ describe('Condition', function () {
 
       var regexp = '/\n+/';
 
-      condition.conditionMap.notMatches.forEach(function (op) {
+      conditionMap.notMatches.forEach(function (op) {
         var jsonForTest = getJsonForTest('fName', op, regexp);
         it(readableIt(jsonForTest, 'fName', op, regexp), function () {
           var c = new condition(jsonForTest);
@@ -622,8 +639,8 @@ describe('Condition', function () {
       var country1 = 'Canada';
       var country2 = 'Brazil';
 
-      condition.conditionMap.eq.forEach(function (eqOp) {
-        condition.conditionMap.neq.forEach(function (neqOp) {
+      conditionMap.eq.forEach(function (eqOp) {
+        conditionMap.neq.forEach(function (neqOp) {
           var cond = [
             {country: {}},
             {country: {}}
