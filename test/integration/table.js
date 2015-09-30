@@ -9,7 +9,8 @@ describe('Table', function () {
 
   beforeEach(function() {
     if (!maprdb.exists(tableNameForTests)) {
-      maprdb.createTableSync(tableNameForTests);
+      var _table = maprdb.createTableSync(tableNameForTests);
+      _table.close();
     }
   });
 
@@ -21,8 +22,8 @@ describe('Table', function () {
 
   describe('table#insert', function () {
     it('should insert some data', function (done) {
-      var t = maprdb.getTable(tableNameForTests);
-      t.insert({
+      var _table = maprdb.getTable(tableNameForTests);
+      _table.insert({
         _id: '0123',
         name: 'John',
         lastName: 'Doe',
@@ -40,7 +41,7 @@ describe('Table', function () {
           }
         ]
       }, function() {
-        t.findById('0123', function(err, document) {
+        _table.findById('0123', function(err, document) {
           assert.equal(document._id, '0123', 'inserted document `_id` field validation');
           assert.equal(document.name, 'John', 'inserted document `name` field validation');
           assert.equal(document.lastName, 'Doe', 'inserted document `lastName` validation');
@@ -57,6 +58,7 @@ describe('Table', function () {
               }
             }
           ], 'inserted document `interests` validation');
+          _table.close();
           done();
         });
       });
@@ -65,19 +67,16 @@ describe('Table', function () {
 
   describe('table#findById(id, *fields, callback)', function() {
     beforeEach(function(done) {
-      this.t = maprdb.getTable(tableNameForTests);
-      this.t.insertAll([
+      var _table = maprdb.getTable(tableNameForTests);
+      _table.insertAll([
         { _id: '1', name: 'John', age: 34 , city: 'Denver'},
         { _id: '2', name: 'Sam', age: 40, city: 'NY'},
         { _id: '3', name: 'Sam', age: 21, city: 'LA' }
       ], function(err) {
         assert.isNull(err, 'no errors thrown');
+        _table.close();
         done();
       });
-    });
-
-    afterEach(function() {
-      this.t = null;
     });
 
     [
@@ -93,26 +92,29 @@ describe('Table', function () {
       }
     ].forEach(function(test) {
       it(test.m, function (done) {
+        var _table = maprdb.getTable(tableNameForTests);
         var calledArgs = test.args;
         var wrapFn = function(err, doc) {
           assert.deepEqual(doc, test.e);
+          _table.close();
           done();
         };
         calledArgs.push(wrapFn);
-        this.t.findById.apply(this.t, calledArgs);
+        _table.findById.apply(_table, calledArgs);
       });
     });
   });
 
   describe('table#find', function() {
     beforeEach(function(done) {
-      this.t = maprdb.getTable(tableNameForTests);
-      this.t.insertAll([
+      var _table = maprdb.getTable(tableNameForTests);
+      _table.insertAll([
         { _id: '1', name: 'John', age: 34 , city: 'Denver'},
         { _id: '2', name: 'Sam', age: 40, city: 'NY'},
         { _id: '3', name: 'Sam', age: 21, city: 'LA' }
       ], function(err) {
         assert.isNull(err, 'no errors thrown');
+        _table.close();
         done();
       });
     });
@@ -123,11 +125,13 @@ describe('Table', function () {
 
     describe('#find(fields, callback)', function() {
       it('should find all data and returns documents with specified fields', function(done) {
-        this.t.find(['name', 'city'], function(err, docs) {
+        var _table = maprdb.getTable(tableNameForTests);
+        _table.find(['name', 'city'], function(err, docs) {
           assert.equal(docs.length, 3, 'should return all documents from the table');
           docs.forEach(function(i) {
             assert.sameDeepMembers(Object.keys(i), ['_id', 'name', 'city'], 'all documents has same keys');
           });
+          _table.close();
           done();
         });
       });
@@ -186,9 +190,11 @@ describe('Table', function () {
         }
       ].forEach(function(test) {
         it('passed condition: ' + JSON.stringify(test.condition) + ' found docs: ' + JSON.stringify(test.e.foundDocs), function(done) {
-          this.t.find(test.condition, function(err, docs) {
+          var _table = maprdb.getTable(tableNameForTests);
+          _table.find(test.condition, function(err, docs) {
             assert.equal(docs.length, test.e.docsCount, 'docs count validation');
             assert.deepEqual(docs, test.e.foundDocs, 'docs equality validation');
+            _table.close();
             done();
           });
         });
@@ -221,9 +227,11 @@ describe('Table', function () {
         }
       ].forEach(function(test) {
         it('passed condition: ' + JSON.stringify(test.condition) + ', passed fields: ' + test.fields + ' found docs: ' + JSON.stringify(test.e.foundDocs), function(done) {
-          this.t.find(test.condition, test.fields, function(err, docs) {
+          var _table = maprdb.getTable(tableNameForTests);
+          _table.find(test.condition, test.fields, function(err, docs) {
             assert.equal(docs.length, test.e.docsCount, 'docs count validation');
             assert.deepEqual(docs, test.e.foundDocs, 'docs equality validation');
+            _table.close();
             done();
           });
         });
@@ -233,18 +241,15 @@ describe('Table', function () {
 
   describe('table#update(_id, mutation, callback)', function() {
     beforeEach(function(done) {
-      this.t = maprdb.getTable(tableNameForTests);
-      this.t.insertAll([
+      var _table = maprdb.getTable(tableNameForTests);
+      _table.insertAll([
         { _id: '1', name: 'John'},
         { _id: '2', name: 'Sam', age: 40, city: 'NY', interests: ['Coding', 'Bike']},
       ], function(err) {
         assert.isNull(err, 'no errors thrown');
+        _table.close();
         done();
       });
-    });
-
-    afterEach(function() {
-      this.t = null;
     });
 
     [
@@ -294,16 +299,19 @@ describe('Table', function () {
       var message = test.m || ('passed mutation:' + JSON.stringify(test.mutation) + ' result:' + JSON.stringify(test.e.result));
       it(message, function(done) {
         var self = this;
+        var _table = maprdb.getTable(tableNameForTests);
         try {
-          self.t.update(test.id, test.mutation, function(err) {
-            self.t.findById(test.id, function(err2, doc) {
+          _table.update(test.id, test.mutation, function(err) {
+            _table.findById(test.id, function(err2, doc) {
               assert.deepEqual(doc, test.e.result, 'document after mutation');
+              _table.close();
               done();
             });
           });
         } catch (e) {
           if (test.e.errorE) {
             assert.equal(e.name, test.e.errorManager.name);
+            _table.close();
             done();
           } else {
             assert.fail();
@@ -315,20 +323,17 @@ describe('Table', function () {
 
   describe('table#eachDocument(condition, fields, callback)', function () {
     beforeEach(function(done) {
-      this.t = maprdb.getTable(tableNameForTests);
-      this.t.insertAll([
+      var _table = maprdb.getTable(tableNameForTests);
+      _table.insertAll([
         { _id: '1', name: 'John', age: 34 , city: 'Denver'},
         { _id: '2', name: 'Sam', age: 40, city: 'NY'},
         { _id: '3', name: 'Sam', age: 21, city: 'LA' },
         { _id: '4', name: 'Ben', age: 16, city: 'Oslo' }
       ], function(err) {
         assert.isNull(err, 'no errors thrown');
+        _table.close();
         done();
       });
-    });
-
-    afterEach(function() {
-      this.t = null;
     });
 
     describe('#eachDocument', function() {
@@ -353,18 +358,20 @@ describe('Table', function () {
       ].forEach(function(test) {
         it(test.m, function(done) {
           this.timeout(5000);
+          var _table = maprdb.getTable(tableNameForTests);
           var res = [];
           var calledArgs = test.args;
           var wrapFn = function(err, doc) {
             res.push(doc);
             if (res.length === test.e.length) {
               assert.deepEqual(res, test.e, 'data validation');
+              _table.close();
               done();
             }
           };
           calledArgs.push(wrapFn);
 
-          this.t.eachDocument.apply(this.t, calledArgs);
+          _table.eachDocument.apply(_table, calledArgs);
         });
       });
     });
@@ -372,20 +379,17 @@ describe('Table', function () {
 
   describe('table#stream', function() {
     beforeEach(function(done) {
-      this.t = maprdb.getTable(tableNameForTests);
-      this.t.insertAll([
+      var _table = maprdb.getTable(tableNameForTests);
+      _table.insertAll([
         { _id: '1', name: 'John', age: 34 , city: 'Denver'},
         { _id: '2', name: 'Sam', age: 40, city: 'NY'},
         { _id: '3', name: 'Sam', age: 21, city: 'LA' },
         { _id: '4', name: 'Ben', age: 16, city: 'Oslo' }
       ], function(err) {
         assert.isNull(err, 'no errors thrown');
+        _table.close();
         done();
       });
-    });
-
-    afterEach(function() {
-      this.t = null;
     });
 
     [
@@ -410,12 +414,14 @@ describe('Table', function () {
       it(test.m, function(done) {
         // to be sure that
         this.timeout(5000);
+        var _table = maprdb.getTable(tableNameForTests);
         var res = [];
         var calledArgs = test.args;
         var wrapFn = function(err, doc) {
           res.push(doc);
           if (res.length === test.e.length) {
             assert.deepEqual(res, test.e, 'data validation');
+            _table.close();
             done();
           }
         };
@@ -423,27 +429,24 @@ describe('Table', function () {
           read: wrapFn
         });
 
-        this.t.stream.apply(this.t, calledArgs);
+        _table.stream.apply(_table, calledArgs);
       });
     });
   });
 
   describe('table#delete', function() {
     beforeEach(function(done) {
-      this.t = maprdb.getTable(tableNameForTests);
-      this.t.insertAll([
+      var _table = maprdb.getTable(tableNameForTests);
+      _table.insertAll([
         { _id: '1', name: 'John', age: 34 , city: 'Denver'},
         { _id: '2', name: 'Sam', age: 40, city: 'NY'},
         { _id: '3', name: 'Sam', age: 21, city: 'LA' },
         { _id: '4', name: 'Ben', age: 16, city: 'Oslo' }
       ], function(err) {
         assert.isNull(err, 'no errors thrown');
+        _table.close();
         done();
       });
-    });
-
-    afterEach(function() {
-      this.t = null;
     });
 
     [
@@ -466,12 +469,14 @@ describe('Table', function () {
     ].forEach(function(test) {
       it('should remove document with _id ' + test._id, function(done) {
         var self = this;
-        this.t.delete(test._id, function(err) {
+        var _table = maprdb.getTable(tableNameForTests);
+        _table.delete(test._id, function(err) {
           assert.isUndefined(err, 'no error thrown');
-          self.t.flush(function() {
-            self.t.find(function(errFind, docs) {
+          _table.flush(function() {
+            _table.find(function(errFind, docs) {
               assert.isUndefined(errFind, 'no error thrown');
               assert.sameMembers(docs.map(function(item) { return item._id; }), test.e);
+              _table.close();
               done();
             });
           });
