@@ -108,7 +108,7 @@ Array of options to pass to the creation of the JVM.
 ```javascript
 var maprdb = require('maprdb-js');
 maprdb.jvmOptions.push('-Xmx1024m');
-maprdb.jvmOptions.push('-DcustomOption=customValue);
+maprdb.jvmOptions.push('-DcustomOption=customValue');
 ```
 
 #### maprdb.jvmClasspath
@@ -123,6 +123,228 @@ maprdb.jvmClasspath.push('some.jar'); // add .jar file
 maprdb.jvmClasspath.push('Some.class'); // add .class file
 maprdb.jvmClasspath.pushDir('someDir'); // add all files from ./someDir
 ```
+
+
+API Documents
+---
+
+
+- [maprdb](#maprdb)
+    - [getTable](#gettable)
+    - [createTableSync](#createtablesync)
+    - [createTable](#createtable)
+    - [deleteTable](#deletetable)
+    - [exists](#exists)
+    - [maprHomeDir](#maprHomeDir)
+    - [jvmClasspath](#jvmClasspath)
+    - [jvmOptions](#jvmOptions)
+
+- [table](#Table)
+    - [find](#find)
+    - [findById](#findbyid)
+    - [update](#update)
+    - [insert](#insert)
+    - [insertAll](#insertall)
+    - [stream](#stream)
+    - [eachDocument](#eachdocument)
+    - [close](#close)
+
+
+
+## maprdb
+
+#### getTable
+#### createTableSync
+#### createTable
+#### deleteTable
+#### exists
+
+## Table
+
+#### find
+
+```javascript
+/* documents:
+    {_id: '01', name: 'John', age: 10},
+    {_id: '02', name: 'Sam', age: 20}
+*/
+var maprdb = require('maprdb');
+var table = maprdb.getTable('/apps/my_table');
+
+// pass fields to return and callback
+table.find(['name'], function(err, docs) {
+    console.log(err, docs);
+    // output: [
+    //    {_id: '01', name: 'John'},
+    //    {_id: '02', name: 'Sam'}
+    // ]
+});
+
+// pass condition to match and callback
+table.find({ age: 10}, function(err, docs) {
+    console.log(docs) // output: [{_id: '01', name: 'John', age: 10}]
+});
+
+// pass condition to match, fields to return and callback
+table.find({ age: 20}, ['age'] function(err, docs) {
+    console.log(docs) // output: [{_id: '02', age: 20}]
+});
+
+// pass callback only, return all documents
+table.find(function(err, docs) {
+    console.log(docs);
+    // output: [
+    //    {_id: '01', name: 'John', age: 10},
+    //    {_id: '02', name: 'Sam', age: 20}
+    // ]
+});
+// close table
+table.close();
+```
+
+#### findById
+
+```javascript
+/* documents:
+    {_id: '01', name: 'John', age: 10},
+    {_id: '02', name: 'Sam', age: 20}
+*/
+var maprdb = require('maprdb');
+var table = maprdb.getTable('/apps/my_table');
+
+// pass document _id and callback
+table.findById('01', function(doc) {
+    console.log(doc); // output: {_id: '01', name: 'John', age: 10}
+});
+
+// pass document _id, fields to return
+table.findById('02', ['age'] function(doc) {
+    console.log(doc) // output: [{_id: '02', age: 20}]
+});
+
+// close table
+table.close();
+```
+
+#### update
+
+```javascript
+/* documents:
+    {_id: '01', name: 'John', age: 10},
+    {_id: '02', name: 'Sam', age: 20}
+*/
+var maprdb = require('maprdb');
+var table = maprdb.getTable('/apps/my_table');
+
+// pass document _id and mutation
+table.update('01', { age: { $inc: 1}}, function(err) {
+   // callback body
+});
+
+// close table
+table.close();
+```
+
+#### insert
+
+```javascript
+/* documents:
+    {_id: '01', name: 'John', age: 10},
+    {_id: '02', name: 'Sam', age: 20}
+*/
+var maprdb = require('maprdb');
+var table = maprdb.getTable('/apps/my_table');
+
+table.insert({ _id: '10', name: 'Tom'}, function(err) {
+    // callback body
+});
+
+// close table
+table.close();
+```
+
+#### insertAll
+
+```javascript
+/* documents:
+    {_id: '01', name: 'John', age: 10},
+    {_id: '02', name: 'Sam', age: 20}
+*/
+var maprdb = require('maprdb');
+var table = maprdb.getTable('/apps/my_table');
+
+table.insertAll([
+        { _id: '10', name: 'Tom'},
+        { _id: '12', name: 'Jerry'}
+    ], function(err) {
+        // callback body
+});
+
+// close table
+table.close();
+```
+
+#### stream
+
+```javascript
+/* documents:
+    {_id: '01', name: 'John', age: 10},
+    {_id: '02', name: 'Sam', age: 20}
+*/
+var maprdb = require('maprdb');
+var table = maprdb.getTable('/apps/my_table');
+
+table.stream({age: { $gte: 10}}, {
+    err: function(err) {
+        // error handler
+    },
+    read: function(doc) {
+        // handle single document
+    },
+    end: function() {
+        // handle end of iteration
+    }
+});
+
+// close table
+table.close();
+```
+
+#### eachDocument
+
+```javascript
+/* documents:
+    {_id: '01', name: 'John', age: 10},
+    {_id: '02', name: 'Sam', age: 20}
+*/
+var maprdb = require('maprdb');
+var table = maprdb.getTable('/apps/my_table');
+
+table.eachDocument({age: { $gte: 10}}, function(doc, err) {
+    // handle single document and error
+});
+
+// close table
+table.close();
+```
+
+#### close
+
+Conventional method to close table when you've completed all needed operations.
+This will prevent memory leaks.
+
+```javascript
+/* documents:
+    {_id: '01', name: 'John', age: 10},
+    {_id: '02', name: 'Sam', age: 20}
+*/
+var maprdb = require('maprdb');
+var table = maprdb.getTable('/apps/my_table');
+// make some operations over table
+// and close it when you don't need it anymore
+table.close();
+```
+
 
 Run Tests
 ---
