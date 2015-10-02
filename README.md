@@ -135,9 +135,6 @@ API Documents
     - [createTable](#createtable)
     - [deleteTable](#deletetable)
     - [exists](#exists)
-    - [maprHomeDir](#maprHomeDir)
-    - [jvmClasspath](#jvmClasspath)
-    - [jvmOptions](#jvmOptions)
 
 - [table](#Table)
     - [find](#find)
@@ -154,10 +151,41 @@ API Documents
 ## maprdb
 
 #### getTable
+
+```javascript
+var maprdb = require('maprdb');
+var table = maprdb.getTable('/apps/my_table');
+```
+
 #### createTableSync
+
+```javascript
+var maprdb = require('maprdb');
+var table = maprdb.createTableSync('/apps/my_table');
+```
+
 #### createTable
+
+```javascript
+var maprdb = require('maprdb');
+maprdb.createTable('/apps/my_table', function (err, table) {
+	// callback body
+});
+```
 #### deleteTable
+```javascript
+var maprdb = require('maprdb');
+maprdb.deleteTable('/apps/my_table', function (err, res) {
+	// callback body
+});
+```
+
 #### exists
+
+```javascript
+var maprdb = require('maprdb');
+var tableExists = maprdb.exists('/apps/my_table'); // true|false
+```
 
 ## Table
 
