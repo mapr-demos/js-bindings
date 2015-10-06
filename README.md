@@ -79,10 +79,18 @@ Now you can require and use this package as external dependency. For example:
 
 ```javascript
 // index.js
+
 var mapr = require('maprdb-js');
-var table = mapr.createTable('/apps/my_table');
-table.insert({_id: '1', name: 'John', lastName: 'Doe', age: 20}, function(err) {
-  console.log('my first record');
+// let's create a table asynchronously
+mapr.createTable('/apps/my_table', function(error, table) {
+  if (!error) {
+    // insert new document to the table
+    table.insert({_id: '1', name: 'John', lastName: 'Doe', age: 20}, function(err) {
+      console.log('my first record');
+    });
+  } else {
+    console.log(error);
+  }
 });
 ```
 
