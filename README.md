@@ -80,9 +80,9 @@ Now you can require and use this package as external dependency. For example:
 ```javascript
 // index.js
 
-var mapr = require('maprdb-js');
+var maprdb = require('maprdb-js');
 // let's create a table asynchronously
-mapr.createTable('/apps/my_table', function(error, table) {
+maprdb.createTable('/apps/my_table', function(error, table) {
   if (!error) {
     // insert new document to the table
     table.insert({_id: '1', name: 'John', lastName: 'Doe', age: 20}, function(err) {
@@ -217,13 +217,13 @@ table.find(['name'], function(err, docs) {
 });
 
 // pass condition to match and callback
-table.find({ age: 10}, function(err, docs) {
-    console.log(docs) // output: [{_id: '01', name: 'John', age: 10}]
+table.find({ age: 20}, function(err, docs) {
+    console.log(docs); // output: [{_id: '02', name: 'Sam', age: 20}]
 });
 
 // pass condition to match, fields to return and callback
-table.find({ age: 20}, ['age'] function(err, docs) {
-    console.log(docs) // output: [{_id: '02', age: 20}]
+table.find({ age: 20}, ['age'], function(err, docs) {
+    console.log(docs); // output: [{_id: '02', age: 20}]
 });
 
 // pass callback only, return all documents
@@ -249,12 +249,12 @@ var maprdb = require('maprdb');
 var table = maprdb.getTable('/apps/my_table');
 
 // pass document _id and callback
-table.findById('01', function(doc) {
+table.findById('01', function(err, doc) {
     console.log(doc); // output: {_id: '01', name: 'John', age: 10}
 });
 
 // pass document _id, fields to return
-table.findById('02', ['age'] function(doc) {
+table.findById('02', ['age'], function(err, doc) {
     console.log(doc) // output: [{_id: '02', age: 20}]
 });
 
